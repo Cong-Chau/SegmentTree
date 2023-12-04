@@ -17,7 +17,7 @@ using namespace std;
 
 // Tai day khai bao du lieu cua: mang, so luong mang, cay
 //          0  1  2  3   4  5  6  7  8  9
-int a[] = { 1, 6, 3, 10, 5, 7, 8, 4, 9, 2 };
+int a[] = { 14, 2, 5, 12, 7, 3, 13, 1, 4, 6, 15, 9, 8, 10, 11 };
 int n = sizeof(a) / sizeof(a[0]);
 int tree[MAX * 4];
 
@@ -65,12 +65,12 @@ int getSum(int id, int left, int right, int u, int v) {
 	if (u > right || v < left) {
 		return 0;
 	}
-	if (u <= left && v >= right) {
+	if (u <= left && v >= right) {//Neu [left, right] nam trong [u, v] tra ve gia tri cua node do
 		return tree[id];
 	}
 	int mid = (left + right) / 2;
-	int sumleft = getSum(id * 2, left, mid, u, v);
-	int sumright = getSum(id * 2 + 1, mid + 1, right, u, v);
+	int sumleft = getSum(id * 2, left, mid, u, v);//Tong phia ben trai
+	int sumright = getSum(id * 2 + 1, mid + 1, right, u, v);//Tong phia ben phai
 	return sumleft + sumright;
 }
 
@@ -92,14 +92,28 @@ void viewTree() { // Ham xuat cay phan doan
 	}
 	cout << endl;
 }
+void updateU_V(int id, int u, int v, int value) {
+	if (u > v)
+		return;//neu khoang can update gia tri nam ngoai khoang ta dang xet thi bo qua node id nay
+	if (u == v) {//doan 1 phan tu khong co nut con
+		a[u] += value;
+		tree[id] = a[u];
+		return;
+	}
+	int mid = (u + v) / 2;
+	updateU_V(id * 2, u, mid, value);//duyet sang cay con trai
+	updateU_V(id * 2 + 1, mid + 1, v, value);//duyet sang cay con phai
+	tree[id] = tree[id * 2] + tree[id * 2 + 1];//cap nhat node cha bang tong 2 node con
+}
 
 void menu() {
 	cout << "\n  =========Menu=========";
 	cout << "\n   0. Ket thuc";
 	cout << "\n   1. Duyet cau phan doan(Segment Tree) theo muc";
-	cout << "\n   2. Cap nhat gia tri (LOAI 1)";
-	cout << "\n   3. Gia tri lon nhat trong doan [u, v]";
-	cout << "\n   4. Tong gia tri trong khoang [u, v] (LOAI 2)";
+	cout << "\n   2. Cap nhat khoang [u, v] len x don vi";
+	cout << "\n   3. Cap nhat gia tri (LOAI 1)";
+	cout << "\n   4. Gia tri lon nhat trong doan [u, v]";
+	cout << "\n   5. Tong gia tri trong khoang [u, v] (LOAI 2)";
 	cout << "\n  ======================";
 	cout << "\n\nMang cho truoc:";
 	viewA();
@@ -125,26 +139,57 @@ int main() {
 			break;
 		}
 		case 2: {
-			cout << "2. Cap nhat gia tri: (LOAI 1)\n";
-			int index, val, b;
-			cout << "  Gia tri thay doi: "; cin >> val;
-			cout << "  Gia tri bi thay doi: "; cin >> b;
-			for (int i = 0; i < n; i++) {
-				if (a[i] == b)
-					index = i;
-			}
-			cout << "\n";
-			updateTree(1, 0, n - 1, index, val);
+			cout << "2. Cap nhat khoang [u, v] len x don vi\n";
+			cout << "  Nhap khoang [u, v]: \n";
+			int u, v;
+			cout << "  u = "; cin >> u;
+			cout << "  v = "; cin >> v;
+			int x;
+			cout << "  x = "; cin >> x;
+			updateU_V(1, u, v, x);
 			cout << "  Mang sau khi cap nhat:\n";
 			viewA();
+			cout << endl;
+			cout << "  Cay sau khi cap nhat:\n";
+			viewTree();
+			cout << endl;
 			system("pause");
 			system("cls");
 			menu();
 			break;
 		}
 		case 3: {
-			cout << "3. Gia tri lon nhat trong khoang [u, v]\n";
-			cout << "  Nhap khoang [u, v]: ";
+			cout << "3. Cap nhat gia tri: (LOAI 1)\n";
+			int index = -1, val, b;
+			cout << "  Gia tri can bi thay doi: "; cin >> b;
+			cout << "  Gia tri thay doi: "; cin >> val;
+			for (int i = 0; i < n; i++) {
+				if (a[i] == b)
+					index = i;
+			}
+			cout << "\n";
+			if (index == -1) {
+				cout << "  Khong tim thay gia tri can bi thay doi!!!\n";
+				system("pause");
+				system("cls");
+				menu();
+				break;
+			}
+			updateTree(1, 0, n - 1, index, val);
+			cout << "  Mang sau khi cap nhat:\n";
+			viewA();
+			cout << endl;
+			cout << "  Cay sau khi cap nhat:\n";
+			viewTree();
+			cout << endl;
+			system("pause");
+			system("cls");
+			menu();
+			break;
+		}
+		case 4: {
+			cout << "4. Gia tri lon nhat trong khoang [u, v]\n";
+			cout << "  Nhap khoang [u, v]: \n";
 			int u, v;
 			cout << "  u = "; cin >> u;
 			cout << "  v = "; cin >> v;
@@ -154,9 +199,9 @@ int main() {
 			menu();
 			break;
 		}
-		case 4: {
-			cout << "4. Tong gia tri trong khoang [u, v] (LOAI 2)\n";
-			cout << "  Nhap khoang [u, v]: ";
+		case 5: {
+			cout << "5. Tong gia tri trong khoang [u, v] (LOAI 2)\n";
+			cout << "  Nhap khoang [u, v]: \n";
 			int u, v;
 			cout << "  u = "; cin >> u;
 			cout << "  v = "; cin >> v;
